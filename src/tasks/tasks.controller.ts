@@ -30,8 +30,8 @@ export class TasksController {
   @Get()
   @ApiOperation({ summary: 'Fetch all tasks' })
   @ApiOkResponse({ type: [ResponseTaskDto] })
-  fetchTasks(@Query() filter: FetchTasksQueryDto): Promise<ResponseTaskDto[]> {
-    if (filter.search || filter.status) {
+  fetchTasks(@Query() filter?: FetchTasksQueryDto): Promise<ResponseTaskDto[]> {
+    if (filter?.search || filter?.status) {
       return this.tasksService.fetchTasksWithFilter(filter);
     }
     return this.tasksService.fetchAllTasks();
