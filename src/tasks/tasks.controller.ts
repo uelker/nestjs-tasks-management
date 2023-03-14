@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
+  ApiCreatedResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
@@ -22,7 +23,7 @@ import { ResponseTaskDto } from './dto/response-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { TasksService } from './tasks.service';
 
-@Controller('tasks')
+@Controller('tasks-api/v1/tasks')
 @ApiTags('Tasks API')
 export class TasksController {
   constructor(private tasksService: TasksService) {}
@@ -50,7 +51,7 @@ export class TasksController {
 
   @Post()
   @ApiOperation({ summary: 'Create a new task' })
-  @ApiOkResponse({ type: ResponseTaskDto })
+  @ApiCreatedResponse({ type: ResponseTaskDto })
   createTask(@Body() createTaskDto: CreateTaskDto): Promise<ResponseTaskDto> {
     return this.tasksService.createTask(createTaskDto);
   }
