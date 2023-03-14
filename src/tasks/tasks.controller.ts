@@ -4,22 +4,33 @@ import {
   Delete,
   Get,
   Param,
+  ParseUUIDPipe,
   Patch,
   Post,
   Query,
 } from '@nestjs/common';
+import {
+  ApiBadRequestResponse,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { FetchTasksQueryDto } from './dto/fetch-tasks-query.dto';
+import { ResponseTaskDto } from './dto/response-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
-import { Task } from './task-model';
 import { TasksService } from './tasks.service';
 
 @Controller('tasks')
+@ApiTags('Tasks API')
 export class TasksController {
   constructor(private tasksService: TasksService) {}
 
   @Get()
-  fetchTasks(@Query() filter: FetchTasksQueryDto): Task[] {
+  @ApiOperation({ summary: 'Fetch all tasks' })
+  @ApiOkResponse({ type: [ResponseTaskDto] })
+  fetchTasks(@Query() filter: FetchTasksQueryDto): Promise<ResponseTaskDto[]> {
     if (filter.search || filter.status) {
       return this.tasksService.fetchTasksWithFilter(filter);
     }
@@ -27,22 +38,41 @@ export class TasksController {
   }
 
   @Get(':id')
-  fetchTaskById(@Param('id') id: string): Task {
+  @ApiOperation({ summary: 'Fetch task by id' })
+  @ApiOkResponse({ type: ResponseTaskDto })
+  @ApiNotFoundResponse({ description: 'Task not found' })
+  @ApiBadRequestResponse({ description: 'Invalid id' })
+  fetchTaskById(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<ResponseTaskDto> {
     return this.tasksService.fetchTaskById(id);
   }
 
   @Post()
-  createTask(@Body() createTaskDto: CreateTaskDto) {
+  @ApiOperation({ summary: 'Create a new task' })
+  @ApiOkResponse({ type: ResponseTaskDto })
+  createTask(@Body() createTaskDto: CreateTaskDto): Promise<ResponseTaskDto> {
     return this.tasksService.createTask(createTaskDto);
   }
 
   @Patch(':id')
-  updateTask(@Param('id') id: string, @Body() updateTaskDto: UpdateTaskDto) {
+  @ApiOperation({ summary: 'Update a task' })
+  @ApiOkResponse({ description: 'Task updated successfully' })
+  @ApiNotFoundResponse({ description: 'Task not found' })
+  @ApiBadRequestResponse({ description: 'Invalid id' })
+  updateTask(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() updateTaskDto: UpdateTaskDto,
+  ): Promise<void> {
     return this.tasksService.updateTask(id, updateTaskDto);
   }
 
   @Delete(':id')
-  deleteTask(@Param('id') id: string) {
-    this.tasksService.deleteTaskById(id);
+  @ApiOperation({ summary: 'Delete a task' })
+  @ApiOkResponse({ description: 'Task deleted successfully' })
+  @ApiNotFoundResponse({ description: 'Task not found' })
+  @ApiBadRequestResponse({ description: 'Invalid id' })
+  deleteTask(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
+    return this.tasksService.deleteTaskById(id);
   }
 }
